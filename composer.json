@@ -1,0 +1,24 @@
+{
+    "name": "freescout/nobilikgroupedtags",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nobilik"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\NobilikGroupedTags\\Providers\\GroupedTagsServiceProvider"
+            ],
+            "aliases": {
+                
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\NobilikGroupedTags\\": ""
+        }
+    }
+}

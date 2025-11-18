@@ -1,0 +1,22 @@
+/**
+ * Public/css/module.css for NOBILIKGROUPEDTAGS
+ */
+
+/* Стили для кнопки тега в модальном окне или на странице настроек,
+   чтобы цвета тегов (background-color) хорошо смотрелись. */
+.tag-name {
+    /* Добавляем тень для лучшей читаемости текста на фоне ярких цветов тегов */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4); 
+    color: white; /* Убеждаемся, что текст белый */
+}
+
+/* Стилизация для списка доступных тегов, чтобы они были компактными */
+.dropdown-menu li a {
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+/* Визуальное разделение между группами тегов */
+.panel[data-group-id] {
+    margin-bottom: 20px;
+}

@@ -1,0 +1,24 @@
+{
+    "name": "NobilikGroupedTags",
+    "alias": "nobilikgroupedtags",
+    "description": "Use NobilikGroupedTags to supervise tags module.",
+    "version": "1.0.0",
+    "detailsUrl": "https://freescout.net/module/tags/",
+    "author": "Nobilik",
+    "authorUrl": "https://github.com/nobilik",
+    "requiredAppVersion": "1.8.181",
+    "license": "AGPL-3.0",
+    "keywords": [],
+    "active": 0,
+    "order": 0,
+    "providers": [
+        "Modules\\NobilikGroupedTags\\Providers\\GroupedTagsServiceProvider"
+    ],
+    "aliases": {
+        "Tag": "Modules\\NobilikGroupedTags\\Entities\\GroupedTag"
+    },
+    "files": [
+        "start.php"
+    ],
+    "requires": []
+}
