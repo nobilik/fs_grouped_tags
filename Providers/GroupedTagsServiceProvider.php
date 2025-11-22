@@ -27,8 +27,6 @@ class GroupedTagsServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Conversation::observe(ConversationObserver::class);
-
         $this->registerConfig();
         $this->registerViews();
         $this->registerFactories();
@@ -63,20 +61,9 @@ class GroupedTagsServiceProvider extends ServiceProvider
         // ---------------------------------------------------------------------
         $listener = 'Modules\NobilikGroupedTags\Listeners\ConversationListener';
         
-        // Свойство 1: copy_to_new_conversation (Клиент присылает письмо)
+        // copy_to_new_conversation (Клиент присылает письмо)
         \Eventy::addAction('conversation.created_by_customer', $listener.'@handleMailReceived', 20, 1); // Приоритет 20
-        
-        // // Свойство 2 (часть 1): auto_apply (Беседа создана ВРУЧНУЮ сотрудником)
-        // \Eventy::addAction('conversation.created_by_user', $listener.'@handleConversationCreatedByUser', 20, 2); 
-        
-        // // Свойство 2 (часть 2): auto_apply (Беседа создана АВТОМАТИЧЕСКИ, первое действие сотрудника)
-        // // Используем ответ или заметку.
-        // \Eventy::addAction('conversation.user_replied', $listener.'@handleUserAction', 20, 2);
-        // \Eventy::addAction('conversation.note_added', $listener.'@handleUserAction', 20, 2);
-
-        // 1. Проверяем ограничение (max_tags_for_conversation) при добавлении тега
-        \Eventy::action('tag.attached', $listener.'@handleTagAttached', 20, 2);
-        
+               
 
         // --- ИНТЕГРАЦИЯ В ГЛОБАЛЬНОЕ МЕНЮ НАСТРОЕК (после Tags) ---
 
@@ -112,11 +99,6 @@ class GroupedTagsServiceProvider extends ServiceProvider
         \Eventy::addAction('layout.body_bottom', function() {
             echo view('nobilikgroupedtags::partials.required_tags_modal')->render();
         });
-
-        // \Eventy::addAction('js.vars', function() {
-        //     echo 'var NobilikCheckUrl = "' . route('grouped-tags.check') . '";';
-        //     // echo 'var NobilikAttachUrl = "' . route('grouped-tags.attach') . '";';
-        // });
     }
 
     /**
