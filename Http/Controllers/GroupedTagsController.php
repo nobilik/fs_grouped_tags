@@ -8,7 +8,11 @@ use Illuminate\Http\Response;
 use Modules\NobilikGroupedTags\Entities\TagGroup;
 use Modules\NobilikGroupedTags\Entities\TagGroupTag;
 use Modules\Tags\Entities\Tag; // Используем модель тегов из модуля Tags
+use Modules\Tags\Entities\ConversationTag;
 use Illuminate\Support\Facades\DB;
+use App\Conversation;
+
+use Modules\NobilikGroupedTags\Services\MandatoryTagService;
 
 
 class GroupedTagsController extends Controller
@@ -40,9 +44,10 @@ class GroupedTagsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'max_tags' => 'required|integer|min:1',
             'copy_to_new_conversation' => 'sometimes|boolean',
-            'auto_apply' => 'sometimes|boolean', 
+            'required_for_conversation' => 'sometimes|boolean', 
+            'max_tags_for_conversation' => 'integer',
+            'max_tags' => 'required|integer|min:1'
         ]);
 
         TagGroup::create($request->all());
@@ -59,9 +64,10 @@ class GroupedTagsController extends Controller
         $group = TagGroup::find($group_id);
         $request->validate([
             'name' => 'required|max:255|unique:tag_groups,name,' . $group->id,
-            'max_tags' => 'required|integer|min:1',
             'copy_to_new_conversation' => 'sometimes|boolean',
-            'auto_apply' => 'sometimes|boolean'
+            'required_for_conversation' => 'sometimes|boolean', 
+            'max_tags_for_conversation' => 'integer',
+            'max_tags' => 'required|integer|min:1'
         ]);
 
         // --- Проверка Свойства 2: Нельзя уменьшить лимит ниже текущего количества тегов ---
@@ -73,10 +79,11 @@ class GroupedTagsController extends Controller
         }
 
         $group->name = $request->input('name');
+        $group->max_tags_for_conversation = $request->input('max_tags_for_conversation');
         $group->max_tags = $request->input('max_tags');
         // Обработка чекбокса: если не передан, то false
         $group->copy_to_new_conversation = $request->has('copy_to_new_conversation'); 
-        $group->auto_apply = $request->has('auto_apply'); 
+        $group->required_for_conversation = $request->has('required_for_conversation'); 
 
         $group->save();
 
@@ -236,4 +243,103 @@ class GroupedTagsController extends Controller
             );
         }
     }
+
+    /**
+     * Проверяет, выполнены ли условия обязательных тегов для заявки.
+     * Вызывается через AJAX перед отправкой ответа.
+     */
+
+    public function check(Request $request, MandatoryTagService $service)
+    {
+        $conversation = Conversation::findOrFail($request->conversation_id);
+
+        $missing = $service->getMissingGroups($conversation);
+
+        return response()->json([
+            'status' => $missing ? 'error' : 'success',
+            'missing_groups' => $missing
+        ]);
+    }
+
+    /**
+     * Прикрепляет выбранные теги к беседе.
+     * Используется метод attachToConversation модели Tag.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function attachTagToConversation(Request $request)
+    {
+        $request->validate([
+            'conversation_id' => 'required',
+            'tag_ids'         => 'required|array|min:1',
+            'tag_ids.*'       => 'integer',
+            'group_id'        => 'required|integer',
+        ]);
+
+        // conversation_id может приходить как массив
+        $conversationId = $request->conversation_id;
+        if (is_array($conversationId)) {
+            $conversationId = (int) $conversationId[0];
+        } else {
+            $conversationId = (int) $conversationId;
+        }
+
+        $groupId = (int) $request->group_id;
+        $tagIds  = $request->tag_ids;
+
+        // 1. Проверяем группу
+        $group = TagGroup::find($groupId);
+        if (!$group) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Tag group not found.'
+            ], 422);
+        }
+
+        $limit = $group->max_tags_for_conversation ?? 0;
+
+        // Получаем все теги группы
+        $groupTagIds = TagGroupTag::where('tag_group_id', $groupId)
+            ->pluck('tag_id')
+            ->toArray();
+
+        // 2. Проверяем, что все теги принадлежат группе
+        foreach ($tagIds as $tagId) {
+            if (!in_array($tagId, $groupTagIds)) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => "Tag ID {$tagId} does not belong to this group."
+                ], 422);
+            }
+        }
+
+        // 3. Проверяем лимит для группы
+        if ($limit > 0) {
+            $existingCount = ConversationTag::where('conversation_id', $conversationId)
+                ->whereIn('tag_id', $groupTagIds)
+                ->count();
+
+            if (($existingCount + count($tagIds)) > $limit) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => "Maximum {$limit} tags allowed in this group."
+                ], 422);
+            }
+        }
+
+        // 4. Прикрепляем теги
+        foreach ($tagIds as $tagId) {
+            $tag = Tag::find($tagId);
+            if ($tag) {
+                $tag->attachToConversation($conversationId);
+            }
+        }
+
+        return response()->json([
+            'status'  => 'ok',
+            'message' => 'Tags attached successfully.',
+        ]);
+    }
 }
+

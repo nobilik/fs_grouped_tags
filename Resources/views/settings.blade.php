@@ -71,10 +71,10 @@
                 <span class="label label-default">{{ __('Do not Copy') }}</span>
             @endif
 
-            @if($group->auto_apply)
-                <span class="label label-success"><i class="glyphicon glyphicon-flash"></i> {{ __('Auto-Apply Tags') }}</span>
+            @if($group->required_for_conversation)
+                <span class="label label-success"><i class="glyphicon glyphicon-flash"></i> {{ __('Required Tags') }}</span>
             @else
-                <span class="label label-default">{{ __('Manual Application') }}</span>
+                <span class="label label-default">{{ __('Free Tags') }}</span>
             @endif
             <hr>
             

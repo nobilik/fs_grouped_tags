@@ -1,22 +1,5 @@
 (function () {
-    var module_routes = [
-    {
-        "uri": "grouped-tags\/attach",
-        "name": "grouped-tags.attach"
-    },
-    {
-        "uri": "grouped-tags\/detach",
-        "name": "grouped-tags.detach"
-    },
-    {
-        "uri": "grouped-tags\/tag\/store",
-        "name": "grouped-tags.tag.store"
-    },
-    {
-        "uri": "grouped-tags\/{group}\/destroy",
-        "name": "grouped-tags.destroy"
-    }
-];
+    var module_routes = [];
 
     if (typeof(laroute) != "undefined") {
         laroute.add_routes(module_routes);

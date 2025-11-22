@@ -3,7 +3,7 @@
     "alias": "nobilikgroupedtags",
     "description": "Use NobilikGroupedTags to supervise tags module.",
     "version": "1.0.0",
-    "detailsUrl": "https://freescout.net/module/tags/",
+    "detailsUrl": "https://github.com/nobilik/fs_grouped_tags",
     "author": "Nobilik",
     "authorUrl": "https://github.com/nobilik",
     "requiredAppVersion": "1.8.181",

@@ -1,0 +1,156 @@
+/* ========================= */
+/* Overlay (фон под модалкой) */
+/* ========================= */
+
+.tag-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none; /* по умолчанию скрыт */
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+}
+
+.tag-modal-overlay.open {
+    display: flex; /* открытие модалки */
+}
+
+/* ========================= */
+/* Само модальное окно       */
+/* ========================= */
+
+.tag-modal {
+    background: white;
+    border-radius: 12px;
+    max-width: 700px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.25);
+}
+
+/* ========================= */
+/* Контейнер содержимого     */
+/* ========================= */
+
+.tag-modal__content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 24px;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+/* ========================= */
+/* Заголовок                 */
+/* ========================= */
+
+.tag-modal__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.tag-modal__title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.tag-modal__close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #7a7a7a;
+    padding: 4px;
+    transition: color 0.2s ease;
+}
+
+.tag-modal__close-btn:hover {
+    color: #4a4a4a;
+}
+
+.tag-modal__close-icon {
+    width: 24px;
+    height: 24px;
+}
+
+/* ========================= */
+/* Тело модального окна      */
+/* ========================= */
+
+.tag-modal__body {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+.tag-modal__warning {
+    font-size: 14px;
+    color: #d32f2f;
+    margin-bottom: 16px;
+    font-weight: 500;
+}
+
+.tag-modal__groups {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ========================= */
+/* Футер                     */
+/* ========================= */
+
+.tag-modal__footer {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e5e5;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tag-modal__status {
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ========================= */
+/* Кнопка отправки           */
+/* ========================= */
+
+.tag-modal__submit-btn {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    font-size: 17px;
+    font-weight: 600;
+    color: white;
+    background: #4F46E5;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s ease, opacity 0.2s ease;
+}
+
+.tag-modal__submit-btn:hover {
+    background: #4338CA;
+}
+
+.tag-modal__submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

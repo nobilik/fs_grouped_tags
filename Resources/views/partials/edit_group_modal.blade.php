@@ -14,12 +14,6 @@
                         <label for="name-{{ $group->id }}">{{ __('Group Name') }}</label>
                         <input type="text" class="form-control" name="name" id="name-{{ $group->id }}" value="{{ $group->name }}" required>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="max_tags-{{ $group->id }}">{{ __('Max Tags (N)') }}</label>
-                        <input type="number" class="form-control" name="max_tags" id="max_tags-{{ $group->id }}" min="{{ $group->tags->count() }}" value="{{ $group->max_tags }}" required>
-                        <p class="help-block">{{ __('Current tags:') }} {{ $group->tags->count() }}. {{ __('Minimum value is current count.') }}</p>
-                    </div>
 
                     <div class="form-group">
                         <label class="checkbox-inline">
@@ -31,10 +25,22 @@
 
                     <div class="form-group">
                         <label class="checkbox-inline">
-                            <input type="checkbox" name="auto_apply" value="1" 
-                                @if($group->auto_apply) checked @endif> 
-                            {{ __('Automatically apply tags from this group.') }}
+                            <input type="checkbox" name="required_for_conversation" value="1" 
+                                @if($group->required_for_conversation) checked @endif> 
+                            {{ __('Tag from this group is required for a conversation.') }}
                         </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="max_tags_for_conversation-{{ $group->id }}">{{ __('Max Tags For Conversation (N)') }}</label>
+                        <input type="number" class="form-control" name="max_tags_for_conversation" id="max_tags_for_conversation-{{ $group->id }}" min="{{ 0 }}" value="{{ $group->max_tags_for_conversation }}" required>
+                        <p class="help-block">{{ __('Zero value is unlimited.') }}</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="max_tags-{{ $group->id }}">{{ __('Max Tags (N)') }}</label>
+                        <input type="number" class="form-control" name="max_tags" id="max_tags-{{ $group->id }}" min="{{ $group->tags->count() }}" value="{{ $group->max_tags }}" required>
+                        <p class="help-block">{{ __('Current tags:') }} {{ $group->tags->count() }}. {{ __('Minimum value is current count.') }}</p>
                     </div>
                 </div>
                 <div class="modal-footer">

@@ -3,6 +3,10 @@
 namespace Modules\NobilikGroupedTags\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Conversation;
+use Modules\NobilikGroupedTags\Observers\ConversationObserver; 
+
+use Illuminate\Support\Facades\Log;
 
 // Определяем алиас модуля
 define('GT_MODULE', 'nobilikgroupedtags');
@@ -23,11 +27,14 @@ class GroupedTagsServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        Conversation::observe(ConversationObserver::class);
+
         $this->registerConfig();
         $this->registerViews();
-        // $this->registerFactories(); // Если нужны фабрики
+        $this->registerFactories();
         $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
         $this->hooks();
+
     }
 
     /**
@@ -35,80 +42,41 @@ class GroupedTagsServiceProvider extends ServiceProvider
      */
     public function hooks()
     {
-        // ---------------------------------------------------------------------
-        // 1. ЛОГИКА СОБЫТИЙ (Свойства 4 и 5)
-        // ---------------------------------------------------------------------
-        $listener = 'NobilikGroupedTags\Listeners\ConversationListener';
-        
-        // Свойство 1: copy_to_new_conversation (Клиент присылает письмо)
-        \Eventy::addAction('mail.received', $listener.'@handleMailReceived', 20, 1); // Приоритет 20
-        
-        // Свойство 2 (часть 1): auto_apply (Беседа создана ВРУЧНУЮ сотрудником)
-        \Eventy::addAction('conversation.created_by_user', $listener.'@handleConversationCreatedByUser', 20, 2); 
-        
-        // Свойство 2 (часть 2): auto_apply (Беседа создана АВТОМАТИЧЕСКИ, первое действие сотрудника)
-        // Используем ответ или заметку.
-        \Eventy::addAction('conversation.user_replied', $listener.'@handleUserAction', 20, 2);
-        \Eventy::addAction('conversation.note_added', $listener.'@handleUserAction', 20, 2);
-        
-        // ---------------------------------------------------------------------
-        // 2. ИНТЕРФЕЙС И НАСТРОЙКИ (Свойство 6)
-        // ---------------------------------------------------------------------
 
         // Добавляем CSS и JS файлы модуля в layout.
         \Eventy::addFilter('stylesheets', function($styles) {
             $styles[] = \Module::getPublicPath(GT_MODULE).'/css/module.css';
+            $styles[] = \Module::getPublicPath(GT_MODULE).'/css/tagmanager.css';
             return $styles;
         });
 
-        // 1. Добавление модуля в список для генерации laroute.js
-        \Eventy::addFilter('laroute_generate_paths', function($paths) {
-            $modulePath = \Module::getPublicPath('NobilikGroupedTags') . '/js/laroute.js';
-            $routesPath = \Module::getModulePath('NobilikGroupedTags') . '/Http/routes.php';
-            
-            $paths[] = [
-                'routes' => $routesPath,
-                'path' => $modulePath,
-            ];
-            
-            return $paths;
-        });
-
-        // ... Ваш хук для загрузки module.js ...
+        // Add module's JS file to the application layout.
         \Eventy::addFilter('javascripts', function($javascripts) {
-            $laroutePublicPath = '/modules/nobilikgroupedtags/js/laroute.js';
-            $modulePublicPath = '/modules/nobilikgroupedtags/js/module.js';
-
-            // Проверяем, существует ли laroute.js
-            $larouteSystemPath = \Module::getPublicPath('NobilikGroupedTags') . '/js/laroute.js';
-            if (file_exists($larouteSystemPath)) {
-                // ... log ...
-                $javascripts[] = $laroutePublicPath;
-            }
-            
-            // Загружаем основной файл модуля
-            // ... log ...
-            $javascripts[] = $modulePublicPath;
-            
+            $javascripts[] = \Module::getPublicPath(GT_MODULE).'/js/laroute.js';
+            $javascripts[] = \Module::getPublicPath(GT_MODULE).'/js/module.js';
+            $javascripts[] = \Module::getPublicPath(GT_MODULE).'/js/conversation.js';
             return $javascripts;
         });
 
-        // // Добавляем пункт в меню настроек почтового ящика (Mailbox Menu).
-        // // Это позволяет Администратору перейти к настройкам модуля.
-        // \Eventy::addAction('mailboxes.settings.menu', function($mailbox) {
-        //     // Проверка прав Администратора
-        //     if (\Auth::user()->isAdmin()) {
-        //         // Предполагаем, что у вас будет partials/settings_menu.blade.php
-        //         echo \View::make('nobilikgroupedtags::partials/settings_menu', ['mailbox' => $mailbox])->render();
-        //     }
-        // }, 25);
+        // ---------------------------------------------------------------------
+        // 1. ЛОГИКА СОБЫТИЙ (Свойства 4 и 5)
+        // ---------------------------------------------------------------------
+        $listener = 'Modules\NobilikGroupedTags\Listeners\ConversationListener';
+        
+        // Свойство 1: copy_to_new_conversation (Клиент присылает письмо)
+        \Eventy::addAction('conversation.created_by_customer', $listener.'@handleMailReceived', 20, 1); // Приоритет 20
+        
+        // // Свойство 2 (часть 1): auto_apply (Беседа создана ВРУЧНУЮ сотрудником)
+        // \Eventy::addAction('conversation.created_by_user', $listener.'@handleConversationCreatedByUser', 20, 2); 
+        
+        // // Свойство 2 (часть 2): auto_apply (Беседа создана АВТОМАТИЧЕСКИ, первое действие сотрудника)
+        // // Используем ответ или заметку.
+        // \Eventy::addAction('conversation.user_replied', $listener.'@handleUserAction', 20, 2);
+        // \Eventy::addAction('conversation.note_added', $listener.'@handleUserAction', 20, 2);
 
-        // // Определяем, разрешено ли пользователю видеть меню настроек почтового ящика.
-        // // Достаточно, чтобы пользователь был Администратором.
-        // \Eventy::addFilter('user.can_view_mailbox_menu', function($value, $user) {
-        //     return $value || $user->isAdmin();
-        // }, 20, 2);
-
+        // 1. Проверяем ограничение (max_tags_for_conversation) при добавлении тега
+        \Eventy::action('tag.attached', $listener.'@handleTagAttached', 20, 2);
+        
 
         // --- ИНТЕГРАЦИЯ В ГЛОБАЛЬНОЕ МЕНЮ НАСТРОЕК (после Tags) ---
 
@@ -139,23 +107,20 @@ class GroupedTagsServiceProvider extends ServiceProvider
 
             return $menu;
         });
-    }
 
-    /**
-     * Регистрация роутов модуля. Вызывается из главного GroupedTagsModule.php
-     */
-    public function registerRoutes()
-    {
-        \Route::group([
-            'middleware' => ['web', 'auth.user'],
-            'namespace' => 'Modules\NobilikGroupedTags\Http\Controllers'
-        ], function() {
-            require __DIR__ . '/../Http/routes.php';
+        // Встраиваем модальное окно выбора обязательных тегов в футер
+        \Eventy::addAction('layout.body_bottom', function() {
+            echo view('nobilikgroupedtags::partials.required_tags_modal')->render();
         });
+
+        // \Eventy::addAction('js.vars', function() {
+        //     echo 'var NobilikCheckUrl = "' . route('grouped-tags.check') . '";';
+        //     // echo 'var NobilikAttachUrl = "' . route('grouped-tags.attach') . '";';
+        // });
     }
 
     /**
-     * Регистрация Service Provider.
+     * Register the service provider.
      *
      * @return void
      */
@@ -172,10 +137,10 @@ class GroupedTagsServiceProvider extends ServiceProvider
     protected function registerConfig()
     {
         $this->publishes([
-            __DIR__.'/../Config/config.php' => config_path('groupedtags.php'),
+            __DIR__.'/../Config/config.php' => config_path('nobilikgroupedtags.php'),
         ], 'config');
         $this->mergeConfigFrom(
-            __DIR__.'/../Config/config.php', 'groupedtags'
+            __DIR__.'/../Config/config.php', 'nobilikgroupedtags'
         );
     }
 
@@ -186,7 +151,7 @@ class GroupedTagsServiceProvider extends ServiceProvider
      */
     public function registerViews()
     {
-        $viewPath = resource_path('views/modules/groupedtags');
+        $viewPath = resource_path('views/modules/nobilikgroupedtags');
         $sourcePath = __DIR__.'/../Resources/views';
 
         $this->publishes([
@@ -194,7 +159,7 @@ class GroupedTagsServiceProvider extends ServiceProvider
         ],'views');
 
         $this->loadViewsFrom(array_merge(array_map(function ($path) {
-            return $path . '/modules/groupedtags';
+            return $path . '/modules/nobilikgroupedtags';
         }, \Config::get('view.paths')), [$sourcePath]), 'nobilikgroupedtags');
     }
 
@@ -208,7 +173,37 @@ class GroupedTagsServiceProvider extends ServiceProvider
         $this->loadJsonTranslationsFrom(__DIR__ .'/../Resources/lang');
     }
 
+    /**
+     * Register an additional directory of factories.
+     * @source https://github.com/sebastiaanluca/laravel-resource-flow/blob/develop/src/Modules/ModuleServiceProvider.php#L66
+     */
+    public function registerFactories()
+    {
+        if (! app()->environment('production')) {
+            app(Factory::class)->load(__DIR__ . '/../Database/factories');
+        }
+    }
         
-    // ... (можно добавить registerFactories, registerCommands, provides)
+    // /**
+    //  * https://github.com/nWidart/laravel-modules/issues/626
+    //  * https://github.com/nWidart/laravel-modules/issues/418#issuecomment-342887911
+    //  * @return [type] [description]
+    //  */
+    // public function registerCommands()
+    // {
+    //     $this->commands([
+    //         \Modules\NobilikGroupedTags\Console\Process::class
+    //     ]);
+    // }
+
+    /**
+     * Get the services provided by the provider.
+     *
+     * @return array
+     */
+    public function provides()
+    {
+        return [];
+    }
 }
 

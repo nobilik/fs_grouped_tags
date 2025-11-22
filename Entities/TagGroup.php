@@ -8,10 +8,11 @@ use Modules\Tags\Entities\Tag; // <-- Добавлен импорт модели
 class TagGroup extends Model
 {
     protected $table = 'tag_groups';
-    protected $fillable = ['name', 'max_tags', 'copy_to_new_conversation', 'auto_apply'];
+    protected $fillable = ['name', 'max_tags', 'copy_to_new_conversation', 'required_for_conversation', 'max_tags_for_conversation'];
     protected $casts = [
         'copy_to_new_conversation' => 'boolean',
-        'auto_apply' => 'boolean',
+        'required_for_conversation' => 'boolean',
+        'max_tags_for_conversation' => 'integer',
         'max_tags' => 'integer',
     ];
 

@@ -1,4 +1,5 @@
 {
+    "Grouped Tags": "Группы тегов",
     "Grouped Tags Settings": "Настройки Группированных Тегов",
     "Here you can manage groups for tags, set limits, and define rules for automatic application.": "Здесь вы можете управлять группами тегов, устанавливать лимиты и определять правила для автоматического применения.",
     "Tag Groups": "Группы Тегов",
@@ -16,9 +17,10 @@
     "Are you sure you want to delete the group: \":name\"? Tags will be detached, but not deleted.": "Вы уверены, что хотите удалить группу: \":name\"? Теги будут отвязаны, но не удалены.",
     "Group Name": "Имя Группы",
     "Max Tags (N)": "Макс. количество Тегов (N)",
-    "Maximum number of tags allowed in this group (Property 2).": "Максимальное количество тегов в группе (Свойство 2).",
+    "Maximum number of tags allowed in this group.": "Максимальное количество тегов в группе.",
+    "Max Tags For Conversation (N)": "Максимум тегов из группы разрешенное в беседе",
+    "Zero value is unlimited.": "Ноль - без ограничений",
     "Auto-Apply/Copy Tags": "Автоприменение/Копирование Тегов",
-    "If checked, tags from this group will be copied to new conversations from the same customer and applied automatically upon manual creation/first user action (Properties 3, 4, 5).": "Если отмечено, теги из этой группы будут копироваться в новые беседы от того же клиента и применяться автоматически при ручном создании/первом действии сотрудника (Свойства 3, 4, 5).",
     "Close": "Закрыть",
     "Save": "Сохранить",
     "Edit Tag Group": "Редактировать Группу Тегов",
@@ -35,11 +37,11 @@
     "Cannot reduce maximum tag limit below the current number of attached tags (:count).": "Нельзя уменьшить максимальный лимит тегов ниже текущего количества привязанных тегов (:count).",
     "Are you sure you want to assign this tag to the selected group?": "Вы уверены, что хотите привязать этот тег к выбранной группе?",
     "Are you sure you want to detach tag \":tag\" from group \":group\"?": "Вы уверены, что хотите отвязать тег \":tag\" от группы \":group\"?",
+    "Required Tags": "Тег из группы обязателен в беседе",
+    "Free Tags": "Необязательные теги", 
 
-    "Maximum number of tags allowed in this group.": "Максимальное количество тегов, разрешенное в этой группе.",
     "Copy Tags": "Копировать Теги",
-    "If checked, tags from this group will be copied to new conversations from the same customer.": "Если отмечено, теги из этой группы будут копироваться в новые беседы от того же клиента.",
-    "Automatically apply tags from this group.": "Автоматически применять теги из этой группы.",
+    "Tag from this group is required for a conversation.": "Тег из группы обязателен для беседы.",
     "Create New Tag": "Создать Новый Тег",
     "Tag Name": "Имя Тега",
     "Tag Color ID": "ID Цвета Тега",
@@ -59,5 +61,10 @@
     "Error: The tag is not currently assigned to this group.": "Ошибка: Тег в данный момент не привязан к этой группе.",
     "Database error during tag detachment.": "Ошибка базы данных при отвязке тега.",
     "Tag successfully created.": "Тег успешно создан.",
-    "Failed to create tag.": "Не удалось создать тег."
+    "Failed to create tag.": "Не удалось создать тег.",
+
+    "Required Tags Missing": "Отсутствуют обязательные метки",
+    "You cannot send a reply or close the conversation until you select tags from the following required groups:": "Вы не можете отправить ответ или закрыть диалог, пока не выберете метки из следующих обязательных групп:",
+    "Apply Tags & Continue": "Применить метки и продолжить",
+    "Select a tag...": "Выберите метку..."
 }

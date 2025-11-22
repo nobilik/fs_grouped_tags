@@ -1,6 +1,6 @@
 <?php
 
-// Этот файл должен находиться в App\Modules\NobilikGroupedTags\routes\web.php
+// Этот файл должен находиться в Modules\NobilikGroupedTags\routes\web.php
 
 Route::group([
     'middleware' => 'web', 
@@ -8,6 +8,22 @@ Route::group([
     'namespace' => 'Modules\NobilikGroupedTags\Http\Controllers' 
 ], function()
 {
+
+    Route::any('/grouped-tags/check', [
+        'uses' => 'GroupedTagsController@check', 
+        'middleware' => ['auth', 'roles'], 
+        'roles' => ['admin', 'user'], 
+        'laroute' => true
+    ])->name('grouped-tags.check');
+    
+
+    Route::any('/grouped-tags/attach-tag', [
+        'uses' => 'GroupedTagsController@attachTagToConversation', 
+        'middleware' => ['auth', 'roles'], 
+        'roles' => ['admin', 'user'], 
+        'laroute' => true
+    ])->name('grouped-tags.attach-tag');
+
         // 4. Прикрепление тега (POST/ANY)
     Route::any('/grouped-tags/attach', [
         'uses' => 'GroupedTagsController@attachTag', 
@@ -66,6 +82,5 @@ Route::group([
         'middleware' => ['auth', 'roles'], 
         'roles' => ['admin']
     ])->name('grouped-tags.store'); // Имя, используемое в Blade (add_group_modal)
-    
 
 });
