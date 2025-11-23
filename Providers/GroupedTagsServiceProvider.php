@@ -4,6 +4,7 @@ namespace Modules\NobilikGroupedTags\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use App\Conversation;
+use App\Events\CustomerCreatedConversation;
 use Modules\NobilikGroupedTags\Observers\ConversationObserver; 
 
 use Illuminate\Support\Facades\Log;
@@ -64,8 +65,13 @@ class GroupedTagsServiceProvider extends ServiceProvider
         $listener = 'Modules\NobilikGroupedTags\Listeners\ConversationListener';
         
         // copy_to_new_conversation (Клиент присылает письмо)
-        \Eventy::addAction('conversation.created', $listener.'@handleMailReceived', 20, 1); // Приоритет 20
+        // \Eventy::addAction('conversation.created', $listener.'@handleMailReceived', 20, 1); // Приоритет 20
                
+        \Eventy::addAction(
+            CustomerCreatedConversation::class,
+            $listener.'@handleMailReceived', 20, 1
+        );
+
 
         // --- ИНТЕГРАЦИЯ В ГЛОБАЛЬНОЕ МЕНЮ НАСТРОЕК (после Tags) ---
 
