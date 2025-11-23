@@ -4,7 +4,7 @@ namespace Modules\NobilikGroupedTags\Listeners;
 use App\Conversation;
 use Illuminate\Support\Facades\Log;
 use Modules\Tags\Entities\Tag;
-use Module\NobilikGroupedTags\Entities\TagGroup;
+use Modules\NobilikGroupedTags\Entities\TagGroup;
 
 class ConversationListener
 {
