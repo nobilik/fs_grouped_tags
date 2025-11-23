@@ -57,16 +57,6 @@ class GroupedTagsServiceProvider extends ServiceProvider
             return $javascripts;
         });
 
-        // \Eventy::addFilter('layout.head', function ($html) {
-        //     $html .= '<script src="' . \Module::getPublicPath(GT_MODULE) . '/js/tag-delete-guard.js' . '"></script>';
-        //     return $html;
-        // });
-
-        // \Eventy::addFilter('layout.scripts', function ($scripts) {
-        //     $scripts[] = \Module::getPublicPath(GT_MODULE) . '/js/tag-delete-guard.js';
-        //     return $scripts;
-        // });
-
 
         // ---------------------------------------------------------------------
         // 1. ЛОГИКА СОБЫТИЙ (Свойства 4 и 5)
@@ -74,7 +64,7 @@ class GroupedTagsServiceProvider extends ServiceProvider
         $listener = 'Modules\NobilikGroupedTags\Listeners\ConversationListener';
         
         // copy_to_new_conversation (Клиент присылает письмо)
-        \Eventy::addAction('conversation.created_by_customer', $listener.'@handleMailReceived', 20, 1); // Приоритет 20
+        \Eventy::addAction('conversation.created', $listener.'@handleMailReceived', 20, 1); // Приоритет 20
                
 
         // --- ИНТЕГРАЦИЯ В ГЛОБАЛЬНОЕ МЕНЮ НАСТРОЕК (после Tags) ---

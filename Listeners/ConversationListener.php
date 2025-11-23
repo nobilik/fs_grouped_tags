@@ -6,7 +6,7 @@ use App\Thread;       // Используем App\Thread
 use App\User;         // Используем App\User (хотя не используется напрямую в этой логике)
 use Module\NobilikGroupedTags\Entities\TagGroup; // Ваша модель группы тегов
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Log;
 
 class ConversationListener
 {
@@ -19,6 +19,7 @@ class ConversationListener
         /** @var Conversation $conversation */
         $conversation = $event->conversation;
         
+        \Log::emergency('handleMailReceived fired', ['event' => $event]);
         // Находим предыдущую беседу по email клиента
         // TODO: by chat ids?
         $previousConversation = Conversation::where('customer_email', $conversation->customer_email)
@@ -54,17 +55,6 @@ class ConversationListener
         if (!empty($tagsToApply)) {
             $conversation->tags()->syncWithoutDetaching(array_unique($tagsToApply));
         }
-    }
-
-    /**
-     * Свойство 2 (часть 1): Навешивание тегов, если беседа создана ВРУЧНУЮ СОТРУДНИКОМ.
-     * @param Conversation $conversation
-     * @param Thread $thread
-     */
-    public function handleConversationCreatedByUser(Conversation $conversation, Thread $thread)
-    {
-        // Вызываем новый метод для auto_apply
-        $this->applyAutoApplyTags($conversation);
     }
 
 }
