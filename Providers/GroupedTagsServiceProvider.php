@@ -67,10 +67,12 @@ class GroupedTagsServiceProvider extends ServiceProvider
         // copy_to_new_conversation (Клиент присылает письмо)
         // \Eventy::addAction('conversation.created', $listener.'@handleMailReceived', 20, 1); // Приоритет 20
                
-        \Eventy::addAction(
-            CustomerCreatedConversation::class,
-            $listener.'@handleMailReceived', 20, 1
-        );
+        \Eventy::addFilter('conversation.created_by_customer', function($conversation, $thread, $customer) use ($listener) {
+            // Просто передаём три аргумента
+            $listener->handleMailReceived($conversation, $thread, $customer);
+
+            return $conversation; // обязательно возвращаем conversation, т.к. это filter
+        }, 20, 3);
 
 
         // --- ИНТЕГРАЦИЯ В ГЛОБАЛЬНОЕ МЕНЮ НАСТРОЕК (после Tags) ---
