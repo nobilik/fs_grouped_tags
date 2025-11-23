@@ -53,8 +53,20 @@ class GroupedTagsServiceProvider extends ServiceProvider
             $javascripts[] = \Module::getPublicPath(GT_MODULE).'/js/laroute.js';
             $javascripts[] = \Module::getPublicPath(GT_MODULE).'/js/module.js';
             $javascripts[] = \Module::getPublicPath(GT_MODULE).'/js/conversation.js';
+            $javascripts[] = \Module::getPublicPath(GT_MODULE) .'/js/tag-delete-guard.js';
             return $javascripts;
         });
+
+        // \Eventy::addFilter('layout.head', function ($html) {
+        //     $html .= '<script src="' . \Module::getPublicPath(GT_MODULE) . '/js/tag-delete-guard.js' . '"></script>';
+        //     return $html;
+        // });
+
+        // \Eventy::addFilter('layout.scripts', function ($scripts) {
+        //     $scripts[] = \Module::getPublicPath(GT_MODULE) . '/js/tag-delete-guard.js';
+        //     return $scripts;
+        // });
+
 
         // ---------------------------------------------------------------------
         // 1. ЛОГИКА СОБЫТИЙ (Свойства 4 и 5)

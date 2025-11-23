@@ -346,9 +346,10 @@ class GroupedTagsController extends Controller
     {
         $tagId = $request->tag_id;
 
-        // Проверяем — принадлежит ли тег обязательной группе
-        $group = GroupedTag::where('tag_id', $tagId)
-            ->where('required_for_conversation', true)
+        // Находим группы, к которым относится тег
+        $group = TagGroupTag::where('tag_id', $tagId)
+            ->join('tag_groups', 'tag_groups.id', '=', 'tag_group_tag.tag_group_id')
+            ->where('tag_groups.required_for_conversation', true)
             ->first();
 
         if ($group) {
@@ -360,6 +361,7 @@ class GroupedTagsController extends Controller
 
         return response()->json(['allowed' => true]);
     }
+
 
 }
 

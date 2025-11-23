@@ -104,42 +104,12 @@
     }
 
     // ============================
-    // УДАЛЕНИЕ ТЕГА С ПРОВЕРКОЙ
-    // ============================
-    function handleTagDelete(e) {
-        e.preventDefault();
-
-        var $btn = $(this);
-        var $form = $btn.closest('form');
-        var tagId = $form.data('tag-id');
-
-        $.ajax({
-            url: laroute.route('grouped-tags.check-tag-delete'),
-            method: 'POST',
-            data: { tag_id: tagId },
-            success: function(res) {
-                if (!res.allowed) {
-                    alert(res.message);
-                    return;
-                }
-
-                if (confirm($form.data('confirm-delete'))) {
-                    $btn.button('loading');
-                    $form.append('<input type="hidden" name="delete" value="1">');
-                    $form.submit();
-                }
-            }
-        });
-    }
-
-    // ============================
     // ИНИЦИАЛИЗАЦИЯ
     // ============================
     function init() {
         $(document).on('click', '.js-delete-group', handleDeleteGroup);
         $(document).on('click', '.js-detach-tag', handleDetachTag);
         $(document).on('click', '.js-attach-tag', handleAttachTag);
-        $(document).on('click', '.tag-delete-forever', handleTagDelete);
 
         console.log('GroupedTags: handlers loaded');
     }
