@@ -62,16 +62,11 @@ class GroupedTagsServiceProvider extends ServiceProvider
         // ---------------------------------------------------------------------
         // 1. ЛОГИКА СОБЫТИЙ (Свойства 4 и 5)
         // ---------------------------------------------------------------------
-        $listener = 'Modules\NobilikGroupedTags\Listeners\ConversationListener';
-        
-        // copy_to_new_conversation (Клиент присылает письмо)
-        // \Eventy::addAction('conversation.created', $listener.'@handleMailReceived', 20, 1); // Приоритет 20
-               
-        \Eventy::addFilter('conversation.created_by_customer', function($conversation, $thread, $customer) use ($listener) {
-            // Просто передаём три аргумента
-            $listener->handleMailReceived($conversation, $thread, $customer);
+        $listenerClass = \Modules\NobilikGroupedTags\Listeners\ConversationListener::class;
 
-            return $conversation; // обязательно возвращаем conversation, т.к. это filter
+        \Eventy::addAction('conversation.created_by_customer', function($conversation, $thread, $customer) use ($listenerClass) {
+            $listener = new $listenerClass();
+            $listener->handleMailReceived($conversation, $thread, $customer);
         }, 20, 3);
 
 
