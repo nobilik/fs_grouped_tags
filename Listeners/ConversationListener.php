@@ -2,34 +2,29 @@
 namespace Modules\NobilikGroupedTags\Listeners;
 
 use App\Conversation;
-use Module\NobilikGroupedTags\Entities\TagGroup;
 use Illuminate\Support\Facades\Log;
+use Modules\Tags\Entities\Tag;
+use Module\NobilikGroupedTags\Entities\TagGroup;
 
 class ConversationListener
 {
     public function handleMailReceived(Conversation $conversation, $thread, $customer)
     {
-        Log::emergency('[GT] Listener START', [
-            'conversation_id' => $conversation->id,
-            'email' => $conversation->customer_email,
-        ]);
 
-        // Находим предыдущую беседу
+        // Ищем предыдущую беседу
         $previousConversation = Conversation::where('customer_email', $conversation->customer_email)
             ->where('id', '<', $conversation->id)
             ->orderBy('id', 'desc')
             ->first();
 
         if (!$previousConversation) {
-            Log::emergency('[GT] No previous conversation found');
             return;
         }
 
-        Log::emergency('[GT] Previous conversation found', [
-            'previous_id' => $previousConversation->id
-        ]);
+        // Получаем теги предыдущей беседы через модуль Tags
+        $previousTags = Tag::conversationTags($previousConversation);
+        $previousTagIds = $previousTags->pluck('id')->toArray();
 
-        $previousTagIds = $previousConversation->tags()->pluck('tags.id')->toArray();
         Log::emergency('[GT] Previous tags', ['tags' => $previousTagIds]);
 
         if (empty($previousTagIds)) {
@@ -37,7 +32,9 @@ class ConversationListener
             return;
         }
 
+        // Ищем группы, которые копируем
         $groupsToCopy = TagGroup::where('copy_to_new_conversation', true)->get();
+
         Log::emergency('[GT] Groups with copy flag', [
             'count' => $groupsToCopy->count(),
             'ids' => $groupsToCopy->pluck('id'),
@@ -58,15 +55,29 @@ class ConversationListener
             $tagsToApply = array_merge($tagsToApply, $intersection);
         }
 
+        $tagsToApply = array_unique($tagsToApply);
+
         Log::emergency('[GT] Tags to apply', ['tags' => $tagsToApply]);
 
-        if (!empty($tagsToApply)) {
-            $uniqueTags = array_unique($tagsToApply);
-            $conversation->tags()->syncWithoutDetaching($uniqueTags);
-
-            Log::emergency('[GT] Tags applied', ['tags' => $uniqueTags]);
-        } else {
+        if (empty($tagsToApply)) {
             Log::emergency('[GT] No tags to apply');
+            return;
+        }
+
+        // Применяем каждый тег через модуль Tags
+        foreach ($tagsToApply as $tagId) {
+            try {
+                $tag = Tag::find($tagId);
+                if ($tag) {
+                    $tag->attachToConversation($conversation->id);
+                    Log::emergency("[GT] Tag {$tagId} attached");
+                }
+            } catch (\Throwable $e) {
+                Log::emergency('[GT] ERROR while applying tag', [
+                    'tag_id' => $tagId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
     }
 }

@@ -65,22 +65,8 @@ class GroupedTagsServiceProvider extends ServiceProvider
         $listenerClass = \Modules\NobilikGroupedTags\Listeners\ConversationListener::class;
 
         \Eventy::addAction('conversation.created_by_customer', function($conversation, $thread, $customer) use ($listenerClass) {
-
-            \Log::emergency('[GT] Hook fired: conversation.created_by_customer', [
-                'conversation_id' => $conversation->id ?? null,
-                'email' => $conversation->customer_email ?? null
-            ]);
-
             $listener = new $listenerClass();
-            try {
-                $listener->handleMailReceived($conversation, $thread, $customer);
-            } catch (\Throwable $e) {
-                \Log::emergency('[GT] ERROR in listener', [
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString(),
-                ]);
-            }
-
+            $listener->handleMailReceived($conversation, $thread, $customer);
         }, 20, 3);
 
 
