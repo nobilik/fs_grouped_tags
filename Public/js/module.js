@@ -1,194 +1,149 @@
-// Используем полную форму jQuery, чтобы избежать конфликтов
-(function(jQuery, window, document) {
+(function($, window, document) {
     'use strict';
-    
-    // Проверяем наличие fsAjax
+
     if (typeof fsAjax === 'undefined') {
-        console.error('FATAL ERROR: fsAjax function is not defined. Cannot perform AJAX operations securely.');
+        console.error('FATAL ERROR: fsAjax is not defined.');
     }
 
-    /**
-     * Обработчик удаления группы (использует fsAjax для DELETE-запроса).
-     * URL берется из data-delete-url в Blade.
-     */
+    // ============================
+    // УДАЛЕНИЕ ГРУППЫ
+    // ============================
     function handleDeleteGroup(e) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         if (typeof fsAjax === 'undefined') {
-             alert('Cannot proceed: fsAjax is missing. Ensure Freescout core functions are loaded.');
-             return;
+            alert('Cannot proceed: fsAjax missing.');
+            return;
         }
-        
-        var $button = jQuery(this); 
-        var groupId = $button.data('group-id');
+
+        var $button = $(this);
         var groupName = $button.data('group-name');
-        
-        // --- ОБХОДНОЙ ПУТЬ: URL берется из data-атрибута BLADE-шаблона ---
         var url = $button.data('delete-url');
-        // ------------------------------------------------------------------
+        var $groupPanel = $button.closest('.panel');
 
-        var $groupPanel = $button.closest('.panel')
-        
-        var message = 'Are you sure you want to delete tag group "' + groupName + '"? All tags will be unassigned.';
+        if (!url) {
+            alert('Ошибка маршрутизации: нет data-delete-url');
+            return;
+        }
 
-        if (confirm(message)) {
-            
-            if (!url) {
-                console.error('FATAL ERROR: data-delete-url is missing. Check settings.blade.php.');
-                alert('Ошибка маршрутизации: Невозможно сгенерировать URL для удаления. Проверьте шаблон Blade.');
-                return; 
-            }
-
-
-            // =======================================================
-
-
-            // Данные для отправки: указываем метод DELETE
-            var data = { 
-                _method: 'DELETE' // Спуфинг метода
-            };
-            
-            // Запускаем AJAX-запрос. Браузер выполнит 302, что подтвердит удаление на сервере.
-            fsAjax(data, 
-                url, 
-                function(response) {
-                    $groupPanel.fadeOut(300, function() {
-                        jQuery(this).remove();
-                    });
-                    
-                    // Опционально: Обновляем счетчик групп на странице
-                    var $heading = jQuery('h3:contains("Tag Groups")');
-                    var match = $heading.text().match(/\((\d+)\)/);
-                    var currentCount = match ? parseInt(match[1], 10) : 0;
-                    if (currentCount > 0) {
-                        $heading.html($heading.html().replace('('+currentCount+')', '('+(currentCount-1)+')'));
-                    }
-                },
-                true // loaderShow: true
-            );
+        if (confirm('Are you sure you want to delete tag group "' + groupName + '"?')) {
+            var data = { _method: 'DELETE' };
+            fsAjax(data, url, function() {
+                $groupPanel.fadeOut(300, function() { $(this).remove(); });
+            }, true);
         }
     }
 
-    /**
-     * Обработчик отвязки тега (использует fsAjax для POST-запроса).
-     * URL берется из глобальной переменной NobilikGroupedTags.urls.detach.
-     */
+    // ============================
+    // ОТВЯЗКА ТЕГА
+    // ============================
     function handleDetachTag(e) {
         e.preventDefault();
-        
+
         if (typeof fsAjax === 'undefined') {
-             alert('Cannot proceed: fsAjax is missing. Ensure Freescout core functions are loaded.');
-             return;
+            alert('fsAjax missing');
+            return;
         }
 
-        var $button = jQuery(this);
+        var $button = $(this);
         var groupId = $button.data('group-id');
         var tagId = $button.data('tag-id');
-        var groupName = $button.data('group-name');
-        var tagName = $button.data('tag-name');
         var url = $button.data('detach-url');
 
-        console.log('GroupedTags: handleDetachTag called for Tag ID:', tagId, 'Group ID:', groupId); 
-
-        var message = 'Are you sure you want to remove tag "' + tagName + '" from group "' + groupName + '"?';
-
-        if (confirm(message)) { 
-            
-            if (typeof url === 'undefined' || !url) {
-                console.error('GroupedTags: URL for detach is missing. Check settings.blade.php.');
-                alert('Ошибка маршрутизации: Невозможно сгенерировать URL для открепления тега.');
-                return; 
-            }
-
-            var data = { 
-                group_id: groupId, 
-                tag_id: tagId
-            };
-            
-            fsAjax(data, 
-                url, 
-                function(response) {
-                    if (typeof(response.status) !== 'undefined' && response.status === 'success') {
-                        window.location.reload();
-                    } else {
-                        if (typeof showAjaxError !== 'undefined') {
-                            showAjaxError(response);
-                        } else {
-                            alert('Error detaching tag: ' + (response.message || 'Unknown error'));
-                        }
-                    }
-                },
-                true 
-            );
-        }
-    }
-
-
-    /**
-     * Обработчик привязки тега (использует fsAjax для POST-запроса).
-     * URL берется из глобальной переменной NobilikGroupedTags.urls.attach.
-     */
-    function handleAttachTag(e) {
-        e.preventDefault();
-        
-        if (typeof fsAjax === 'undefined') {
-             alert('Cannot proceed: fsAjax is missing. Ensure Freescout core functions are loaded.');
-             return;
-        }
-        
-        var $link = jQuery(this);
-        var groupId = $link.data('group-id');
-        var tagId = $link.data('tag-id');
-
-        console.log('GroupedTags: handleAttachTag called for Tag ID:', tagId, 'Group ID:', groupId); 
-        
-        // --- КРИТИЧЕСКОЕ ИЗМЕНЕНИЕ: Используем глобальную переменную ---
-        var url = $link.data('attach-url');
-        // -------------------------------------------------------------
-        
-        if (typeof url === 'undefined' || !url) {
-            console.error('GroupedTags: URL for attach is missing. Check settings.blade.php.');
-            alert('Ошибка маршрутизации: Невозможно сгенерировать URL для прикрепления тега.');
-            return; 
+        if (!url) {
+            alert('Ошибка маршрутизации: нет data-detach-url');
+            return;
         }
 
-        var data = { 
-            group_id: groupId, 
-            tag_id: tagId
-        };
-        
-        fsAjax(data, 
-            url, 
-            function(response) {
-                if (typeof(response.status) !== 'undefined' && response.status === 'success') {
+        if (confirm('Are you sure you want to remove tag "' + $button.data('tag-name') +
+            '" from group "' + $button.data('group-name') + '"?')) {
+
+            var data = { group_id: groupId, tag_id: tagId };
+
+            fsAjax(data, url, function(response) {
+                if (response.status === 'success') {
                     window.location.reload();
                 } else {
-                    if (typeof showAjaxError !== 'undefined') {
-                        showAjaxError(response);
-                    } else {
-                        var errorMsg = 'Error attaching tag: ' + (response.message || 'Unknown error or limit reached.');
-                        alert(errorMsg);
-                    }
+                    alert(response.message || 'Unknown error');
                 }
-            },
-            true 
-        );
+            }, true);
+        }
     }
 
-    /**
-     * Инициализация обработчиков событий
-     */
-    function initGroupedTagsSettings() {
-        // Делегирование событий
-        jQuery(document).on('click', '.js-delete-group', handleDeleteGroup);
-        jQuery(document).on('click', '.js-detach-tag', handleDetachTag);
-        jQuery(document).on('click', '.js-attach-tag', handleAttachTag);
-        
-        console.log('GroupedTags: Event listeners initialized.');
+    // ============================
+    // ПРИВЯЗКА ТЕГА
+    // ============================
+    function handleAttachTag(e) {
+        e.preventDefault();
+
+        if (typeof fsAjax === 'undefined') {
+            alert('fsAjax missing');
+            return;
+        }
+
+        var $link = $(this);
+        var groupId = $link.data('group-id');
+        var tagId = $link.data('tag-id');
+        var url = $link.data('attach-url');
+
+        if (!url) {
+            alert('Ошибка маршрутизации: нет data-attach-url');
+            return;
+        }
+
+        var data = { group_id: groupId, tag_id: tagId };
+
+        fsAjax(data, url, function(response) {
+            if (response.status === 'success') {
+                window.location.reload();
+            } else {
+                alert(response.message || 'Attach failed');
+            }
+        }, true);
     }
 
-    // Запускаем инициализацию после полной загрузки DOM
-    jQuery(document).ready(initGroupedTagsSettings);
-    
+    // ============================
+    // УДАЛЕНИЕ ТЕГА С ПРОВЕРКОЙ
+    // ============================
+    function handleTagDelete(e) {
+        e.preventDefault();
+
+        var $btn = $(this);
+        var $form = $btn.closest('form');
+        var tagId = $form.data('tag-id');
+
+        $.ajax({
+            url: laroute.route('grouped-tags.check-tag-delete'),
+            method: 'POST',
+            data: { tag_id: tagId },
+            success: function(res) {
+                if (!res.allowed) {
+                    alert(res.message);
+                    return;
+                }
+
+                if (confirm($form.data('confirm-delete'))) {
+                    $btn.button('loading');
+                    $form.append('<input type="hidden" name="delete" value="1">');
+                    $form.submit();
+                }
+            }
+        });
+    }
+
+    // ============================
+    // ИНИЦИАЛИЗАЦИЯ
+    // ============================
+    function init() {
+        $(document).on('click', '.js-delete-group', handleDeleteGroup);
+        $(document).on('click', '.js-detach-tag', handleDetachTag);
+        $(document).on('click', '.js-attach-tag', handleAttachTag);
+        $(document).on('click', '.tag-delete-forever', handleTagDelete);
+
+        console.log('GroupedTags: handlers loaded');
+    }
+
+    $(document).ready(init);
+
 })(jQuery, window, document);

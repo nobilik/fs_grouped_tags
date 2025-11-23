@@ -24,6 +24,15 @@ Route::group([
         'laroute' => true
     ])->name('grouped-tags.attach-tag');
 
+    Route::any('/grouped-tags/check-tag-delete', [
+        'uses' => 'GroupedTagsController@checkTagDelete',
+        'middleware' => ['auth', 'roles'],
+        'roles' => ['admin', 'user'],
+        'laroute' => true
+    ])->name('grouped-tags.check-tag-delete');
+
+
+
         // 4. Прикрепление тега (POST/ANY)
     Route::any('/grouped-tags/attach', [
         'uses' => 'GroupedTagsController@attachTag', 

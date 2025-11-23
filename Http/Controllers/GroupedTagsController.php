@@ -341,5 +341,25 @@ class GroupedTagsController extends Controller
             'message' => 'Tags attached successfully.',
         ]);
     }
+
+    public function checkTagDelete(Request $request)
+    {
+        $tagId = $request->tag_id;
+
+        // Проверяем — принадлежит ли тег обязательной группе
+        $group = GroupedTag::where('tag_id', $tagId)
+            ->where('required_for_conversation', true)
+            ->first();
+
+        if ($group) {
+            return response()->json([
+                'allowed' => false,
+                'message' => 'Этот тег принадлежит обязательной группе. Удалите его из группы прежде чем удалять тег.'
+            ]);
+        }
+
+        return response()->json(['allowed' => true]);
+    }
+
 }
 

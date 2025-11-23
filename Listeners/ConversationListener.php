@@ -1,5 +1,5 @@
 <?php
-namespace NobilikGroupedTags\Listeners;
+namespace Modules\NobilikGroupedTags\Listeners;
 
 use App\Conversation; // Используем App\Conversation
 use App\Thread;       // Используем App\Thread
