@@ -25,20 +25,12 @@ class ConversationListener
         $previousTags = Tag::conversationTags($previousConversation);
         $previousTagIds = $previousTags->pluck('id')->toArray();
 
-        Log::emergency('[GT] Previous tags', ['tags' => $previousTagIds]);
-
         if (empty($previousTagIds)) {
-            Log::emergency('[GT] Previous conversation has no tags');
             return;
         }
 
         // Ищем группы, которые копируем
         $groupsToCopy = TagGroup::where('copy_to_new_conversation', true)->get();
-
-        Log::emergency('[GT] Groups with copy flag', [
-            'count' => $groupsToCopy->count(),
-            'ids' => $groupsToCopy->pluck('id'),
-        ]);
 
         $tagsToApply = [];
 
@@ -46,21 +38,12 @@ class ConversationListener
             $groupTagIds = $group->tags()->pluck('tags.id')->toArray();
             $intersection = array_intersect($previousTagIds, $groupTagIds);
 
-            Log::emergency('[GT] Checking group', [
-                'group_id' => $group->id,
-                'group_tags' => $groupTagIds,
-                'intersection' => $intersection,
-            ]);
-
             $tagsToApply = array_merge($tagsToApply, $intersection);
         }
 
         $tagsToApply = array_unique($tagsToApply);
 
-        Log::emergency('[GT] Tags to apply', ['tags' => $tagsToApply]);
-
         if (empty($tagsToApply)) {
-            Log::emergency('[GT] No tags to apply');
             return;
         }
 
@@ -70,7 +53,6 @@ class ConversationListener
                 $tag = Tag::find($tagId);
                 if ($tag) {
                     $tag->attachToConversation($conversation->id);
-                    Log::emergency("[GT] Tag {$tagId} attached");
                 }
             } catch (\Throwable $e) {
                 Log::emergency('[GT] ERROR while applying tag', [
