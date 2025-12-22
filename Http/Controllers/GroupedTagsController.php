@@ -229,7 +229,7 @@ class GroupedTagsController extends Controller
         ]);
 
         try {
-            $normName = Tag::normalizeName($request->input('tag_name'))
+            $normName = Tag::normalizeName($request->input('tag_name'));
             // Предполагаем, что App\Models\Tag - это модель тега FreeScout
             Tag::create([
                 'name' => $normName,
