@@ -81,7 +81,7 @@
             <h5>{{ __('Group Tags') }}:</h5>
             @forelse($group->tags as $tag)
                 <div class="btn-group" style="margin-bottom: 5px;">
-                    <span class="btn btn-sm btn-default tag-name" style="background-color: {{ $tag->color }}">{{ $tag->name }}</span>
+                    <span class="btn btn-sm btn-default tag-name tag-c-{{ $tag->getColor() }}">{{ $tag->name }}</span>
                     {{-- data-атрибуты для открепления --}}
                     <button class="btn btn-sm btn-danger js-detach-tag" title="{{ __('Detach Tag') }}" 
                             data-group-id="{{ $group->id }}" 
@@ -126,8 +126,7 @@
     <div class="panel-body">
         @forelse($available_tags as $tag)
             <div class="dropdown" style="display: inline-block; margin-bottom: 5px;">
-                <button class="btn btn-sm btn-success dropdown-toggle" type="button" data-toggle="dropdown" 
-                        style="background-color: {{ $tag->color ?? '#999' }}; border-color: {{ $tag->color ?? '#999' }};">
+                <button class="btn btn-sm btn-success dropdown-toggle tag-c-{{ $tag->getColor() }}" type="button" data-toggle="dropdown">
                     {{ $tag->name }} <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu">
